@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SwiftDecoder:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SwiftDecoder_jar</output-path>
+    <root id="archive" name="SwiftDecoder.jar">
+      <element id="module-output" name="SwiftDecoder" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/springframework/spring-core/5.2.12.RELEASE/spring-core-5.2.12.RELEASE.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/springframework/spring-jcl/5.2.12.RELEASE/spring-jcl-5.2.12.RELEASE.jar" path-in-jar="/" />
+      <element id="dir-copy" path="$PROJECT_DIR$/src/main/resources" />
+    </root>
+  </artifact>
+</component>
