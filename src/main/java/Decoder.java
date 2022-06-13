@@ -8,11 +8,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Decoder {
+
+    static final String hashLinePatternString = "^#$";
+    static final Pattern hashLinePattern = Pattern.compile(hashLinePatternString, Pattern.MULTILINE);
+
+    static final String blocksPatternString = "\\{1:(?<group1>.+?)}\\{2:(?<group2>.+?)}(\\{3:(?<group3>.+?)})?\\{4:(?<group4>.+?)}\\{5:(?<group5>.+)}";
+    static final Pattern blocksPattern = Pattern.compile(blocksPatternString, Pattern.DOTALL);
+
+    static final String columnPatternString = ":([\\dA-Za-z]+?):";
+    static final Pattern columnPattern = Pattern.compile(columnPatternString);
+
+    static final int swiftGroupCount = Integer.parseInt(Config.get("swiftGroupCount"));
+
     public static void workOnSwifts(List<File> files)
     {
-        final String hashLinePatternString = "^#$";
-        final Pattern hashLinePattern = Pattern.compile(hashLinePatternString, Pattern.MULTILINE);
-
         for (File file : files)
         {
             System.out.println("===========================================");
@@ -52,14 +61,6 @@ public class Decoder {
             return;
         }
 
-        final int groupCount = Integer.parseInt(Config.get("swiftGroupCount"));
-
-        final String blocksPatternString = "\\{1:(?<group1>.+?)}\\{2:(?<group2>.+?)}(\\{3:(?<group3>.+?)})?\\{4:(?<group4>.+?)}\\{5:(?<group5>.+)}";
-        final Pattern blocksPattern = Pattern.compile(blocksPatternString, Pattern.DOTALL);
-
-        final String columnPatternString = ":([\\dA-Za-z]+?):";
-        final Pattern columnPattern = Pattern.compile(columnPatternString);
-
         Matcher matcher = blocksPattern.matcher(content);
 
         // group1: 找出銀行 BIC
@@ -67,7 +68,7 @@ public class Decoder {
         // group4: 依欄位分別輸出內容
         if (matcher.find())
         {
-            for (int i = 1; i <= groupCount; i++)
+            for (int i = 1; i <= swiftGroupCount; i++)
             {
                 String blockContent = matcher.group("group" + i);
                 if (blockContent == null || blockContent.isEmpty()) // optional group 可能回傳 null
@@ -87,11 +88,10 @@ public class Decoder {
                         Queue<String> columnNames = new LinkedList<>(); // 依序登錄電文中所有欄位
                         HashSet<String> columnSet = new HashSet<>(); // 用於辨別欄位是否已出現過的 hashset
 
-                        Matcher columnNameMatcher = columnPattern.matcher(blockContent);
-
-                        // 去掉最後一行的斜槓
-
+                        // 去掉 block 4 最後一行的斜槓
                         blockContent = blockContent.replaceAll("\\n-$", "");
+
+                        Matcher columnNameMatcher = columnPattern.matcher(blockContent);
 
                         // 第一次: 依序記錄所有欄位名稱
                         while (columnNameMatcher.find())
