@@ -24,9 +24,6 @@ public class Decoder {
     {
         for (File file : files)
         {
-            System.out.println("===========================================");
-            System.out.println(file.getName());
-            System.out.println("===========================================");
             String content = "";
 
             try {
@@ -40,27 +37,32 @@ public class Decoder {
                 System.out.println(e.getMessage());
             }
 
-            splitSwift(content);
+            // 如果是多次電文，則用split方式處理
+            String[] splits = null;
+            if (content.indexOf("\u0001", 1) != -1) // swift 開始符號
+            {
+                splits = content.split("\u0003"); // swift 結束符號
+            }
+
+            System.out.println("===========================================");
+            System.out.println(file.getName());
+            System.out.println("===========================================");
+            if (splits != null)
+            {
+                for (int i = 0; i < splits.length; i++)
+                {
+                    System.out.println("子電文 " + (i+1));
+                    splitSwift(splits[i]);
+                }
+            } else {
+                splitSwift(content);
+            }
         }
         System.out.println("===========================================");
     }
 
     private static void splitSwift(String content)
     {
-        // 如果是多次電文，則用split方式處理
-        if (content.indexOf("\u0001", 1) != -1)
-        {
-            String[] splits = content.split("\u0003");
-            for (int i = 0; i < splits.length; i++)
-            {
-                String split = splits[i];
-
-                System.out.println("#### 子電文 " + (i+1));
-                splitSwift(split); // recursion
-            }
-            return;
-        }
-
         Matcher matcher = blocksPattern.matcher(content);
 
         // group1: 找出銀行 BIC
