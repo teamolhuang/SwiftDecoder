@@ -44,17 +44,19 @@ public class Decoder {
                 splits = content.split("\u0003"); // swift 結束符號
             }
 
-            System.out.println("===========================================");
-            System.out.println(file.getName());
-            System.out.println("===========================================");
             if (splits != null)
             {
                 for (int i = 0; i < splits.length; i++)
                 {
-                    System.out.println("子電文 " + (i+1));
+                    System.out.println("===========================================");
+                    System.out.println(file.getName()  + " 子電文 " + (i+1));
+                    System.out.println("===========================================");
                     splitSwift(splits[i]);
                 }
             } else {
+                System.out.println("===========================================");
+                System.out.println(file.getName());
+                System.out.println("===========================================");
                 splitSwift(content);
             }
         }
