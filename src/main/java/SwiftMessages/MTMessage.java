@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class MTMessage {
-    public Map<String, String> unknownColumns = new HashMap<>();
+    protected Map<String, String> unknownColumns = new HashMap<>();
 
     @Getter
     protected Class<?> messageType = this.getClass();
@@ -73,7 +73,7 @@ public class MTMessage {
         }
     }
 
-    public List<String> shapeValueByAnnotations(String value, Field field) throws Exception {
+    private List<String> shapeValueByAnnotations(String value, Field field) throws Exception {
         List<String> resultList = new ArrayList<>();
 
         // 行數範圍 LineRange
