@@ -12,7 +12,7 @@ public class MTMessage {
     @Getter
     protected Class<?> messageType = this.getClass();
 
-    private Map<String, List<Field>> idFieldMap = null;
+    private Map<String, HashSet<Field>> idFieldMap = null;
 
     public void setColumn(String key, String value)
     {
@@ -26,7 +26,7 @@ public class MTMessage {
             {
                 if (field.isAnnotationPresent(ColumnId.class)) {
                     String columnId = field.getAnnotation(ColumnId.class).value();
-                    idFieldMap.putIfAbsent(columnId, new ArrayList<>());
+                    idFieldMap.putIfAbsent(columnId, new HashSet<>());
                     idFieldMap.get(columnId).add(field);
                 }
             }
