@@ -18,7 +18,7 @@ public class MT103 extends MTMessage {
     @Presence(PresenceType.Mandatory)
     @ColumnId("20")
     @Getter
-    protected String col20_SendersReference;
+    protected String col20_sendersReference;
 
     @Presence(PresenceType.Mandatory)
     @ColumnId("59")
