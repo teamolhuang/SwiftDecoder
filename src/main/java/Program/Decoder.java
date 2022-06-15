@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
 
 public class Decoder {
 
-    static final String hashLinePatternString = "^#$";
-    static final Pattern hashLinePattern = Pattern.compile(hashLinePatternString, Pattern.MULTILINE);
-
     public static void workOnSwifts(List<File> files)
     {
+        final String hashLinePatternString = "^#$";
+        final Pattern hashLinePattern = Pattern.compile(hashLinePatternString, Pattern.MULTILINE);
+
         for (File file : files)
         {
             String content = "";
@@ -25,37 +25,24 @@ public class Decoder {
                 content = String.join("\n", lines);
             } catch (Exception e)
             {
-                System.out.println(file.getName() + " failed!");
+                System.out.println(file.getName() + " 讀取失敗");
                 System.out.println(e.getMessage());
             }
 
-            // 如果是多次電文，則用split方式處理
-            String[] splits = null;
-            if (content.indexOf("\u0001", 1) != -1) // swift 開始符號
-            {
-                splits = content.split("\u0003"); // swift 結束符號
-            }
+            // 用split方式處理，方便處理同檔多電文的情況
+            String[] splits = content.split("\u0003"); // swift 結束符號
 
-            if (splits != null)
+            for (int i = 0; i < splits.length; i++)
             {
-                for (int i = 0; i < splits.length; i++)
-                {
-                    System.out.println("===========================================");
-                    System.out.println(file.getName()  + " 子電文 " + (i+1));
-                    System.out.println("===========================================");
-                    MTMessage mt = MTMessage.parse(splits[i]);
-                    if (mt != null)
-                        mt.outputAsString();
-                }
-            } else {
                 System.out.println("===========================================");
-                System.out.println(file.getName());
+                System.out.println(file.getName()  + " 中的電文 " + (i+1));
                 System.out.println("===========================================");
-                MTMessage mt = MTMessage.parse(content);
+                MTMessage mt = MTMessage.parse(splits[i]);
                 if (mt != null)
                     mt.outputAsString();
             }
         }
+
         System.out.println("===========================================");
     }
 
