@@ -40,7 +40,7 @@ public class MTMessage {
                 if (field.getType().equals(List.class))
                 {
                     @SuppressWarnings("unchecked")
-                    List<Object> fieldList = (List<Object>) field.get(this);
+                    List<Object> fieldList = (List<Object>) field.get(this); // Unsafe reflection, 待改
 
                     // List 應該要有 ListItemType annotation 來表示此 List 裡面裝什麼
                     Class<?> listItemType = field.getAnnotation(ListItemType.class).value();
