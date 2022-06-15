@@ -169,16 +169,21 @@ public class MTMessage {
         }
     }
 
-    static final String blocksPatternString = "\\{1:(?<group1>.+?)}\\{2:(?<group2>.+?)}(\\{3:(?<group3>.+?)})?\\{4:(?<group4>.+?)}\\{5:(?<group5>.+)}";
-    static final Pattern blocksPattern = Pattern.compile(blocksPatternString, Pattern.DOTALL);
-
-    static final String columnPatternString = ":([\\dA-Za-z]+?):";
-    static final Pattern columnPattern = Pattern.compile(columnPatternString);
-
-    static final int swiftGroupCount = Integer.parseInt(Config.get("swiftGroupCount"));
-
+    /**
+     * 讀取 SWIFT 電文字串，輸出 MTMessage 物件。
+     * @param content SWIFT 電文字串
+     * @return 成功轉換時：MTMessage<br>否則：null
+     */
     public static MTMessage parse(String content)
     {
+        final String blocksPatternString = "\\{1:(?<group1>.+?)}\\{2:(?<group2>.+?)}(\\{3:(?<group3>.+?)})?\\{4:(?<group4>.+?)}\\{5:(?<group5>.+)}";
+        final Pattern blocksPattern = Pattern.compile(blocksPatternString, Pattern.DOTALL);
+
+        final String columnPatternString = ":([\\dA-Za-z]+?):";
+        final Pattern columnPattern = Pattern.compile(columnPatternString);
+
+        final int swiftGroupCount = Integer.parseInt(Config.get("swiftGroupCount"));
+
         Matcher matcher = blocksPattern.matcher(content);
 
         // group1: 找出銀行 BIC
