@@ -10,6 +10,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MTMessage {
+
+    static final int swiftGroupCount = Integer.parseInt(Config.get("swiftGroupCount"));
+    protected String[] headers = new String[swiftGroupCount + 1];
+
     protected Map<String, String> unknownColumns = new HashMap<>();
 
     @Getter
@@ -65,11 +69,16 @@ public class MTMessage {
             }
         } catch (Exception e) {
             // 途中發生任何錯誤時，丟在 unknown Columns
-            System.out.println("設定 " + key + " 欄位時失敗，請確認程式碼");
             unknownColumns.put(key, value);
         }
     }
 
+    /**
+     * 依據 SwiftDecoder.Annotations 格式化 value 。
+     * @param value 參數內容的字串
+     * @param field 對應的欄位
+     * @return List of 格式化好的字串
+     */
     private List<String> shapeValueByAnnotations(String value, Field field) throws Exception {
         List<String> resultList = new ArrayList<>();
 
@@ -140,7 +149,14 @@ public class MTMessage {
     }
 
     public void outputAsString() {
+
+        for (int i = 1; i <= swiftGroupCount; i++) {
+            if (i == 4) continue;
+            System.out.println("Header " + (i) + " : " + headers[i]);
+        }
+
         if (this.messageType != MTMessage.class) {
+            System.out.println("電文 : " + this.messageType.getSimpleName());
             for (Field field : this.messageType.getDeclaredFields()) {
                 try {
                     System.out.println(field.getName() + " : " + field.get(this));
@@ -158,92 +174,86 @@ public class MTMessage {
         }
     }
 
-        /**
-         * 讀取 SWIFT 電文字串，輸出 MTMessage 物件。
-         * @param content SWIFT 電文字串
-         * @return 成功轉換時：MTMessage<br>否則：null
-         */
-        public static MTMessage parse (String content)
-        {
-            final String blocksPatternString = "\\{1:(?<group1>.+?)}\\{2:(?<group2>.+?)}(\\{3:(?<group3>.+?)})?\\{4:(?<group4>.+?)}\\{5:(?<group5>.+)}";
-            final Pattern blocksPattern = Pattern.compile(blocksPatternString, Pattern.DOTALL);
+    /**
+     * 讀取 SWIFT 電文字串，輸出 MTMessage 物件。
+     *
+     * @param content SWIFT 電文字串
+     * @return 成功轉換時：對應的電文物件<br>否則：一個基本的 MTMessage 物件
+     */
+    public static MTMessage parse(String content) {
+        MTMessage mtMessage = parseHeaders(content);
+        parseColumns(mtMessage);
+        return mtMessage;
+    }
 
-            final String columnPatternString = ":([\\dA-Za-z]+?):";
-            final Pattern columnPattern = Pattern.compile(columnPatternString);
+    /**
+     * 分別登錄電文 Headers
+     *
+     * @param content 完整的電文文字內容
+     * @return 分好 Headers 的電文
+     */
+    private static MTMessage parseHeaders(String content) {
+        MTMessage mtMessage = null; // 先看電文種類之後，才決定 parse 成什麼物件
 
-            final int swiftGroupCount = Integer.parseInt(Config.get("swiftGroupCount"));
+        final String blocksPatternString = "\\{1:(?<group1>.+?)}\\{2:(?<group2>.+?)}(\\{3:(?<group3>.+?)})?\\{4:(?<group4>.+?)}\\{5:(?<group5>.+)}";
+        final Pattern blocksPattern = Pattern.compile(blocksPatternString, Pattern.DOTALL);
 
-            Matcher matcher = blocksPattern.matcher(content);
+        Matcher matcher = blocksPattern.matcher(content);
 
-            // group1: 找出銀行 BIC
-            // group2: 找出電文別
-            // group4: 依欄位分別輸出內容
-            if (matcher.find()) {
-                MTMessage mtMessage = null;
+        if (matcher.find()) {
+            String mtCode = matcher.group("group2").substring(1, 4);
 
-                for (int i = 1; i <= swiftGroupCount; i++) {
-                    String blockContent = matcher.group("group" + i);
-                    if (blockContent == null || blockContent.isEmpty()) // optional group 可能回傳 null
-                        continue;
+            mtMessage = getMTMessage("MT" + mtCode);
 
-                    switch (i) {
-                        case 1:
-                            if (blockContent.length() >= 15)
-                                System.out.println("銀行 BIC : " + blockContent.substring(3, 15));
-                            break;
-                        case 2:
-                            String mtCode = null;
-                            if (blockContent.length() >= 4) {
-                                mtCode = blockContent.substring(1, 4);
-                                System.out.println("電文 : MT " + mtCode);
-                            }
+            for (int i = 1; i <= swiftGroupCount; i++) {
+                String blockContent = matcher.group("group" + i);
 
-                            try {
-                                mtMessage = (MTMessage) (Class.forName("SwiftMessages.MT" + mtCode).newInstance());
-                            } catch (Exception e) {
-                                mtMessage = new MTMessage();
-                            }
-                            break;
-                        case 4:
-
-                            if (mtMessage == null)
-                                mtMessage = new MTMessage();
-
-                            Queue<String> columnNames = new LinkedList<>(); // 依序登錄電文中所有欄位
-
-                            // 去掉 block 4 最後一行的斜槓
-                            blockContent = blockContent.replaceAll("\\n-$", "");
-
-                            Matcher columnNameMatcher = columnPattern.matcher(blockContent);
-
-                            // 第一次: 依序記錄所有欄位名稱
-                            while (columnNameMatcher.find()) {
-                                String found = columnNameMatcher.group(1);
-                                columnNames.add(found);
-                            }
-
-                            // 第二次: 以欄位名為 separator, 找出所有欄位內容
-                            // 並依順序和欄位名配對
-                            for (String split : blockContent.split(columnPatternString)) {
-                                if (split.replace("\n", "").trim().isEmpty())
-                                    continue;
-
-                                String thisColumnName = columnNames.remove();
-
-                                split = split.replaceAll("\\n$", ""); // 去掉最後的換行, 讓 println 好看一點
-
-                                mtMessage.setColumn(thisColumnName, split);
-                            }
-
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                return mtMessage;
+                mtMessage.headers[i] = blockContent;
             }
+        }
 
-            return null;
+        return mtMessage;
+    }
+
+    private static MTMessage getMTMessage(String mtName) {
+        try {
+            return (MTMessage) Class.forName("SwiftMessages." + mtName).newInstance();
+        } catch (Exception e) {
+            System.out.println("getMTMessage 收到未知的電文：" + mtName);
+            return new MTMessage();
         }
     }
+
+    private static void parseColumns(MTMessage mtMessage) {
+        final String columnPatternString = ":([\\dA-Za-z]+?):";
+        final Pattern columnPattern = Pattern.compile(columnPatternString);
+
+        String content = mtMessage.headers[4];
+
+        Queue<String> columnNames = new LinkedList<>(); // 依序登錄電文中所有欄位
+
+        // 去掉 block 4 最後一行的斜槓
+        content = content.replaceAll("\\n-$", "");
+
+        Matcher columnNameMatcher = columnPattern.matcher(content);
+
+        // 第一次: 依序記錄所有欄位名稱
+        while (columnNameMatcher.find()) {
+            String found = columnNameMatcher.group(1);
+            columnNames.add(found);
+        }
+
+        // 第二次: 以欄位名為 separator, 找出所有欄位內容
+        // 並依順序和欄位名配對
+        for (String split : content.split(columnPatternString)) {
+            if (split.replace("\n", "").trim().isEmpty())
+                continue;
+
+            String thisColumnName = columnNames.remove();
+
+            split = split.replaceAll("\\n$", ""); // 去掉最後的換行, 讓 println 好看一點
+
+            mtMessage.setColumn(thisColumnName, split);
+        }
+    }
+}
