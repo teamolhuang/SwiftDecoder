@@ -1,4 +1,8 @@
+import SwiftMessages.MT103;
+import SwiftMessages.MTMessage;
+
 import java.io.File;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -72,6 +76,8 @@ public class Decoder {
         // group4: 依欄位分別輸出內容
         if (matcher.find())
         {
+            MTMessage mtMessage = null;
+
             for (int i = 1; i <= swiftGroupCount; i++)
             {
                 String blockContent = matcher.group("group" + i);
@@ -85,12 +91,25 @@ public class Decoder {
                             System.out.println("銀行 BIC : " + blockContent.substring(3, 15));
                         break;
                     case 2:
-                        if (blockContent.length() >= 4)
-                            System.out.println("電文 : MT " + blockContent.substring(1,4));
+                        String mtCode = null;
+                        if (blockContent.length() >= 4) {
+                            mtCode = blockContent.substring(1, 4);
+                            System.out.println("電文 : MT " + mtCode);
+                        }
+
+                        try {
+                            mtMessage = (MTMessage) (Class.forName("SwiftMessages.MT" + mtCode).newInstance());
+                        } catch (Exception e)
+                        {
+                            mtMessage = new MTMessage();
+                        }
                         break;
                     case 4:
+
+                        if (mtMessage == null)
+                            return;
+
                         Queue<String> columnNames = new LinkedList<>(); // 依序登錄電文中所有欄位
-                        HashSet<String> columnSet = new HashSet<>(); // 用於辨別欄位是否已出現過的 hashset
 
                         // 去掉 block 4 最後一行的斜槓
                         blockContent = blockContent.replaceAll("\\n-$", "");
@@ -113,16 +132,9 @@ public class Decoder {
 
                             String thisColumnName = columnNames.remove();
 
-                            // 當此欄位名已在電文中出現過時
-                            if (columnSet.contains(thisColumnName))
-                            {
-                                System.out.println("######## 新一筆子資料");
-                                columnSet.clear();
-                            }
+                            split = split.replaceAll("\\n$", ""); // 去掉最後的換行, 讓 println 好看一點
 
-                            // 去掉最後的換行, 讓 println 好看一點
-                            System.out.println("欄位 " + thisColumnName + " : " + split.replaceAll("\\n$", ""));
-                            columnSet.add(thisColumnName);
+                            mtMessage.setColumn(thisColumnName, split);
                         }
 
                         break;
@@ -130,6 +142,9 @@ public class Decoder {
                         break;
                 }
             }
+
+            if (mtMessage != null)
+                mtMessage.outputAsString();
         }
 
     }
