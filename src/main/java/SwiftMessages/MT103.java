@@ -2,6 +2,7 @@ package SwiftMessages;
 
 import Annotations.*;
 import Enums.PresenceType;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ public class MT103 extends MTMessage {
 
     @Presence(PresenceType.Mandatory)
     @ColumnId("20")
+    @Getter
     protected String col20_SendersReference;
 
     @Presence(PresenceType.Mandatory)
@@ -23,6 +25,7 @@ public class MT103 extends MTMessage {
     @BeginAt(pos = 1)
     @LineRange(bottom = 0)
     @ColumnSizeRange(max = 34)
+    @Getter
     protected String col59a_account;
 
     @Presence(PresenceType.Mandatory)
@@ -30,11 +33,13 @@ public class MT103 extends MTMessage {
     @LineRange(top = 1, bottom = 4)
     @ColumnSizeRange(max = 35)
     @ListItemType(String.class)
+    @Getter
     protected List<String> col59_nameAndAddress = new ArrayList<>();
 
     @Presence(PresenceType.Mandatory)
     @ColumnId("59A")
     @BeginAt(line = 1)
+    @Getter
     protected String col59A_identifierCode;
 
     @Presence(PresenceType.Mandatory)
@@ -43,6 +48,7 @@ public class MT103 extends MTMessage {
     @IfRegex("^1/")
     @BeginAt(pos = 2)
     @ListItemType(String.class)
+    @Getter
     protected List<String> col59F_nameOfBeneficiaryCustomer = new ArrayList<>();
 
     @Presence(PresenceType.Mandatory)
@@ -51,6 +57,7 @@ public class MT103 extends MTMessage {
     @IfRegex("^2/")
     @BeginAt(pos = 2)
     @ListItemType(String.class)
+    @Getter
     protected List<String> col59F_addressLine = new ArrayList<>();
 
     @Presence(PresenceType.Mandatory)
@@ -59,6 +66,7 @@ public class MT103 extends MTMessage {
     @IfRegex("^3?/")
     @BeginAt(afterRegex = "^3?/")
     @ListItemType(String.class)
+    @Getter
     protected List<String> col59F_countryAndTown = new ArrayList<>();
 
 }
