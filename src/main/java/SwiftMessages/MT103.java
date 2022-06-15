@@ -1,17 +1,12 @@
 package SwiftMessages;
 
 import Annotations.*;
-
 import Enums.PresenceType;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class MT103 extends MTMessage {
 
     public MT103()

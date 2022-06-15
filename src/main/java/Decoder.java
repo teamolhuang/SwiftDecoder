@@ -1,10 +1,7 @@
-import SwiftMessages.MT103;
 import SwiftMessages.MTMessage;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
