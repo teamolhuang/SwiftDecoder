@@ -30,7 +30,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>Main</mainClass>
+                            <mainClass>Program.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
