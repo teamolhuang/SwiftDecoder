@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 public class MTMessage {
 
     static final int swiftGroupCount = Integer.parseInt(Config.get("swiftGroupCount"));
-    protected String[] headers = new String[swiftGroupCount + 1];
+    protected String[] headers = new String[swiftGroupCount + 1]; // 1-based, 讀取時讀 headers[4] = swift header 4
 
     protected Map<String, String> unknownColumns = new HashMap<>();
 
