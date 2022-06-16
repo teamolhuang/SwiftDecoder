@@ -34,12 +34,21 @@ public class Decoder {
 
             for (int i = 0; i < splits.length; i++)
             {
+                MTMessage mt = MTMessage.parse(splits[i]);
+
                 System.out.println("===========================================");
                 System.out.println(file.getName()  + " 中的電文 " + (i+1));
                 System.out.println("===========================================");
-                MTMessage mt = MTMessage.parse(splits[i]);
-                if (mt != null)
-                    mt.outputAsString();
+                if (mt == null)
+                    continue;
+
+                mt.getBasicHeaderBlock().outputAsString();
+                mt.getApplicationHeaderBlock().outputAsString();
+                mt.getUserHeaderBlock().outputAsString();
+
+                mt.outputFields();
+
+                mt.getTrailerBlock().outputAsString();
             }
         }
 

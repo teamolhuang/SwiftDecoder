@@ -1,7 +1,9 @@
 package SwiftMessages;
 
 import Annotations.*;
-import Program.Config;
+import SwiftMessages.Blocks.*;
+import Utility.AnnotationApplier;
+import Utility.GenericConstructor;
 import lombok.Getter;
 
 import java.lang.reflect.Field;
@@ -11,8 +13,16 @@ import java.util.regex.Pattern;
 
 public class MTMessage {
 
-    static final int swiftGroupCount = Integer.parseInt(Config.get("swiftGroupCount"));
-    protected String[] headers = new String[swiftGroupCount + 1]; // 1-based, 讀取時讀 headers[4] = swift header 4
+    @Getter
+    protected BasicHeaderBlock basicHeaderBlock = null;
+    @Getter
+    protected ApplicationHeaderBlock applicationHeaderBlock = null;
+    @Getter
+    protected UserHeaderBlock userHeaderBlock = null;
+    @Getter
+    protected TextBlock textBlock = null;
+    @Getter
+    protected TrailerBlock trailerBlock = null;
 
     protected Map<String, String> unknownColumns = new HashMap<>();
 
@@ -21,139 +31,7 @@ public class MTMessage {
 
     private Map<String, HashSet<Field>> idFieldMap = null;
 
-    private void setColumn(String key, String value) {
-        if (this.idFieldMap == null) {
-            // 建立此物件的 columnId-field map
-
-            this.idFieldMap = new HashMap<>();
-
-            for (Field field : this.getMessageType().getDeclaredFields()) {
-                if (field.isAnnotationPresent(ColumnId.class)) {
-                    String columnId = field.getAnnotation(ColumnId.class).value();
-                    idFieldMap.putIfAbsent(columnId, new HashSet<>());
-                    idFieldMap.get(columnId).add(field);
-                }
-            }
-        }
-
-        try {
-            for (Field field : idFieldMap.get(key)) {
-                List<String> thisFieldValues = shapeValueByAnnotations(value, field); // 根據 field 的 annotations 格式化 values
-
-                // 如果是 List, foreach constructed 之後放入 list
-                if (field.getType().equals(List.class)) {
-                    @SuppressWarnings("unchecked")
-                    List<Object> fieldList = (List<Object>) field.get(this); // Unsafe reflection, 待改
-
-                    // List 應該要有 ListItemType annotation 來表示此 List 裡面裝什麼
-                    Class<?> listItemType = field.getAnnotation(ListItemType.class).value();
-
-                    for (String v : thisFieldValues) {
-                        if (listItemType.equals(String.class)) {
-                            fieldList.add(v);
-                        } else {
-                            fieldList.add(field.getType().getConstructor(String.class).newInstance(v));
-                        }
-                    }
-
-                } else {
-                    // 如果 field 不是 list, 固定取第一個結果放進去
-                    if (!thisFieldValues.isEmpty()) {
-                        if (field.getType().equals(String.class)) {
-                            field.set(this, thisFieldValues.get(0));
-                        } else {
-                            field.set(this, field.getType().getConstructor(String.class).newInstance(thisFieldValues.get(0)));
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // 途中發生任何錯誤時，丟在 unknown Columns
-            unknownColumns.put(key, value);
-        }
-    }
-
-    /**
-     * 依據 SwiftDecoder.Annotations 格式化 value 。
-     * @param value 參數內容的字串
-     * @param field 對應的欄位
-     * @return List of 格式化好的字串
-     */
-    private List<String> shapeValueByAnnotations(String value, Field field) throws Exception {
-        List<String> resultList = new ArrayList<>();
-
-        // 行數範圍 LineRange
-        if (value.contains("\n") && field.isAnnotationPresent(LineRange.class)) {
-            LineRange lineRange = field.getAnnotation(LineRange.class);
-
-            if (lineRange.bottom() >= lineRange.top()) {
-
-                String[] splits = value.split("\\n");
-
-                for (int i = lineRange.top(); i <= Math.min(splits.length - 1, lineRange.bottom()); i++) {
-                    resultList.addAll(shapeValueByAnnotations(splits[i], field));
-                }
-
-                return resultList;
-            }
-        }
-
-        // 起始行 BeginAt
-
-        if (field.isAnnotationPresent(BeginAt.class)) {
-            BeginAt beginAt = field.getAnnotation(BeginAt.class);
-
-            if (beginAt.line() > 0) {
-                int beginIndex = -1;
-                for (int i = 0; i < beginAt.line(); i++) {
-                    beginIndex = value.indexOf("\n", beginIndex + 1);
-                }
-
-                if (beginIndex != -1)
-                    value = value.substring(beginIndex);
-            }
-
-            if (beginAt.pos() > 0) {
-                value = value.length() > beginAt.pos() ? value.substring(beginAt.pos()) : "";
-            }
-        }
-
-        // 欄位長度範圍 ColumnSizeRange
-        // 欄位長度指定 ColumnSizeFixed
-
-        if (field.isAnnotationPresent(ColumnSizeRange.class)) {
-            int maxLength = field.getAnnotation(ColumnSizeRange.class).max();
-
-            if (maxLength > 0)
-                value = value.substring(0, Integer.min(value.length(), maxLength));
-        } else if (field.isAnnotationPresent(ColumnSizeFixed.class)) {
-            int fixedSize = field.getAnnotation(ColumnSizeFixed.class).value();
-
-            if (value.length() < fixedSize)
-                throw new Exception("欄位長度小於指定的長度 !!");
-
-            value = value.substring(0, fixedSize);
-        }
-
-        // 正規條件 IfRegex
-
-        if (field.isAnnotationPresent(IfRegex.class)) {
-            String regex = field.getAnnotation(IfRegex.class).value();
-            if (!value.matches(regex))
-                return resultList;
-        }
-
-        resultList.add(value);
-
-        return resultList;
-    }
-
-    public void outputAsString() {
-
-        for (int i = 1; i <= swiftGroupCount; i++) {
-            if (i == 4) continue;
-            System.out.println("Header " + (i) + " : " + headers[i]);
-        }
+    public void outputFields() {
 
         if (this.messageType != MTMessage.class) {
             System.out.println("電文 : " + this.messageType.getSimpleName());
@@ -181,18 +59,18 @@ public class MTMessage {
      * @return 成功轉換時：對應的電文物件<br>否則：一個基本的 MTMessage 物件
      */
     public static MTMessage parse(String content) {
-        MTMessage mtMessage = parseHeaders(content);
+        MTMessage mtMessage = parseBlocks(content);
         parseColumns(mtMessage);
         return mtMessage;
     }
 
     /**
-     * 分別登錄電文 Headers
+     * 分別登錄電文 Blocks
      *
      * @param content 完整的電文文字內容
      * @return 分好 Headers 的電文
      */
-    private static MTMessage parseHeaders(String content) {
+    private static MTMessage parseBlocks(String content) {
         MTMessage mtMessage = null; // 先看電文種類之後，才決定 parse 成什麼物件
 
         final String blocksPatternString = "\\{1:(?<group1>.+?)}\\{2:(?<group2>.+?)}(\\{3:(?<group3>.+?)})?\\{4:(?<group4>.+?)}\\{5:(?<group5>.+)}";
@@ -205,11 +83,11 @@ public class MTMessage {
 
             mtMessage = getMTMessage("MT" + mtCode);
 
-            for (int i = 1; i <= swiftGroupCount; i++) {
-                String blockContent = matcher.group("group" + i);
-
-                mtMessage.headers[i] = blockContent;
-            }
+            mtMessage.basicHeaderBlock = (BasicHeaderBlock) MTBlock.parse(BasicHeaderBlock.class, matcher.group("group1"));
+            mtMessage.applicationHeaderBlock = (ApplicationHeaderBlock) MTBlock.parse(ApplicationHeaderBlock.class, matcher.group("group2"));
+            mtMessage.userHeaderBlock = (UserHeaderBlock) MTBlock.parse(UserHeaderBlock.class, matcher.group("group3"));
+            mtMessage.textBlock = (TextBlock) MTBlock.parse(TextBlock.class, matcher.group("group4"));
+            mtMessage.trailerBlock = (TrailerBlock) MTBlock.parse(TrailerBlock.class, matcher.group("group5"));
         }
 
         return mtMessage;
@@ -228,7 +106,7 @@ public class MTMessage {
         final String columnPatternString = ":([\\dA-Za-z]+?):";
         final Pattern columnPattern = Pattern.compile(columnPatternString);
 
-        String content = mtMessage.headers[4];
+        String content = mtMessage.textBlock.getContent();
 
         Queue<String> columnNames = new LinkedList<>(); // 依序登錄電文中所有欄位
 
@@ -254,6 +132,58 @@ public class MTMessage {
             split = split.replaceAll("\\n$", ""); // 去掉最後的換行, 讓 println 好看一點
 
             mtMessage.setColumn(thisColumnName, split);
+        }
+    }
+
+    private void setColumn(String key, String value) {
+        if (this.idFieldMap == null) {
+            // 建立此物件的 columnId-field map
+
+            this.idFieldMap = new HashMap<>();
+
+            for (Field field : this.getMessageType().getDeclaredFields()) {
+                if (field.isAnnotationPresent(ColumnId.class)) {
+                    String columnId = field.getAnnotation(ColumnId.class).value();
+                    idFieldMap.putIfAbsent(columnId, new HashSet<>());
+                    idFieldMap.get(columnId).add(field);
+                }
+            }
+        }
+
+        try {
+            for (Field field : idFieldMap.get(key)) {
+                List<String> thisFieldValues = AnnotationApplier.shapeValueByAnnotations(value, field); // 根據 field 的 annotations 格式化 values
+
+                // 如果是 List, foreach constructed 之後放入 list
+                if (field.getType().equals(List.class)) {
+                    @SuppressWarnings("unchecked")
+                    List<Object> fieldList = (List<Object>) field.get(this); // Unsafe reflection, 待改
+
+                    // List 應該要有 ListItemType annotation 來表示此 List 裡面裝什麼
+                    Class<?> listItemType = field.getAnnotation(ListItemType.class).value();
+
+                    for (String v : thisFieldValues) {
+                        if (listItemType.equals(String.class)) {
+                            fieldList.add(v);
+                        } else {
+                            fieldList.add(GenericConstructor.getInstance(field, v));
+                        }
+                    }
+
+                } else {
+                    // 如果 field 不是 list, 固定取第一個結果放進去
+                    if (!thisFieldValues.isEmpty()) {
+                        if (field.getType().equals(String.class)) {
+                            field.set(this, thisFieldValues.get(0));
+                        } else {
+                            field.set(this, GenericConstructor.getInstance(field, thisFieldValues.get(0)));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 途中發生任何錯誤時，丟在 unknown Columns
+            unknownColumns.put(key, value);
         }
     }
 }
