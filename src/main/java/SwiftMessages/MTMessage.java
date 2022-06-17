@@ -60,7 +60,7 @@ public class MTMessage {
      */
     public static MTMessage parse(String content) {
         MTMessage mtMessage = parseBlocks(content);
-        parseColumns(mtMessage);
+        mtMessage.parseColumns();
         return mtMessage;
     }
 
@@ -102,11 +102,11 @@ public class MTMessage {
         }
     }
 
-    private static void parseColumns(MTMessage mtMessage) {
+    private void parseColumns() {
         final String columnPatternString = ":([\\dA-Za-z]+?):";
         final Pattern columnPattern = Pattern.compile(columnPatternString);
 
-        String content = mtMessage.textBlock.getContent();
+        String content = this.textBlock.getContent();
 
         Queue<String> columnNames = new LinkedList<>(); // 依序登錄電文中所有欄位
 
@@ -131,7 +131,7 @@ public class MTMessage {
 
             split = split.replaceAll("\\n$", ""); // 去掉最後的換行, 讓 println 好看一點
 
-            mtMessage.setColumn(thisColumnName, split);
+            this.setColumn(thisColumnName, split);
         }
     }
 
