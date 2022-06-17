@@ -18,6 +18,7 @@ public class Decoder {
         {
             String content = "";
 
+            // 取得 file 的完整內容
             try {
                 List<String> lines = Files.readAllLines(file.toPath());
                 lines.removeIf(s -> hashLinePattern.matcher(s).matches()); // 把只包含#的行去掉
@@ -39,8 +40,6 @@ public class Decoder {
                 System.out.println("===========================================");
                 System.out.println(file.getName()  + " 中的電文 " + (i+1));
                 System.out.println("===========================================");
-                if (mt == null)
-                    continue;
 
                 mt.getBasicHeaderBlock().outputAsString();
                 mt.getApplicationHeaderBlock().outputAsString();

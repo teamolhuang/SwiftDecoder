@@ -1,6 +1,7 @@
 package SwiftMessages;
 
-import Annotations.*;
+import Annotations.ColumnId;
+import Annotations.ListItemType;
 import SwiftMessages.Blocks.*;
 import Utility.AnnotationApplier;
 import Utility.GenericConstructor;
@@ -90,7 +91,7 @@ public class MTMessage {
             mtMessage.trailerBlock = (TrailerBlock) MTBlock.parse(TrailerBlock.class, matcher.group("group5"));
         }
 
-        return mtMessage;
+        return mtMessage != null ? mtMessage : new MTMessage();
     }
 
     private static MTMessage getMTMessage(String mtName) {
@@ -108,7 +109,7 @@ public class MTMessage {
 
         String content = this.textBlock.getContent();
 
-        Queue<String> columnNames = new LinkedList<>(); // 依序登錄電文中所有欄位
+        Queue<String> columnNames = new LinkedList<>();
 
         // 去掉 block 4 最後一行的斜槓
         content = content.replaceAll("\\n-$", "");

@@ -1,6 +1,7 @@
 package Utility;
 
 import Annotations.*;
+import Enums.PresenceType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -17,8 +18,13 @@ public class AnnotationApplier {
     public static List<String> shapeValueByAnnotations(String value, Field field) throws Exception {
         List<String> resultList = new ArrayList<>();
 
-        if (value == null)
-            return resultList;
+        if (value == null || value.isEmpty())
+        {
+            if (field.getAnnotation(Presence.class).value() == PresenceType.Mandatory)
+                value = "";
+            else
+                return resultList;
+        }
 
         // 行數範圍 LineRange
         if (value.contains("\n") && field.isAnnotationPresent(LineRange.class)) {
@@ -36,11 +42,12 @@ public class AnnotationApplier {
             }
         }
 
-        // 起始行 BeginAt
+        // 起始位置 BeginAt
 
         if (field.isAnnotationPresent(BeginAt.class)) {
             BeginAt beginAt = field.getAnnotation(BeginAt.class);
 
+            // 行處理
             if (beginAt.line() > 0) {
                 int beginIndex = -1;
                 for (int i = 0; i < beginAt.line(); i++) {
@@ -51,6 +58,7 @@ public class AnnotationApplier {
                     value = value.substring(beginIndex);
             }
 
+            // 位置處理
             if (beginAt.pos() > 0) {
                 value = value.length() > beginAt.pos() ? value.substring(beginAt.pos()) : "";
             }
@@ -79,6 +87,24 @@ public class AnnotationApplier {
             String regex = field.getAnnotation(IfRegex.class).value();
             if (!value.matches(regex))
                 return resultList;
+        }
+
+        // 指定字串之後 AfterLiteral
+
+        if (field.isAnnotationPresent(AfterLiteral.class)) {
+            String literal = field.getAnnotation(AfterLiteral.class).value();
+
+            if (!value.isEmpty())
+                value = value.substring(value.indexOf(literal) + 1);
+        }
+
+        // 直到指定字串 UntilLiteral
+
+        if (field.isAnnotationPresent(UntilLiteral.class)) {
+            String literal = field.getAnnotation(UntilLiteral.class).value();
+
+            if (!value.isEmpty())
+                value = value.substring(0, Math.max(0, value.indexOf(literal)));
         }
 
         resultList.add(value);
