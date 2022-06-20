@@ -11,31 +11,15 @@ public class Decoder {
 
     public static void workOnSwifts(List<File> files)
     {
-        final String hashLinePatternString = "^#$";
-        final Pattern hashLinePattern = Pattern.compile(hashLinePatternString, Pattern.MULTILINE);
-
         for (File file : files)
         {
             String content = "";
 
-            // 取得 file 的完整內容
-            try {
-                List<String> lines = Files.readAllLines(file.toPath());
-                lines.removeIf(s -> hashLinePattern.matcher(s).matches()); // 把只包含#的行去掉
+            List<String> swifts = IO.getSwiftContents(file.toPath());
 
-                content = String.join("\n", lines);
-            } catch (Exception e)
+            for (int i = 0; i < swifts.size(); i++)
             {
-                System.out.println(file.getName() + " 讀取失敗");
-                System.out.println(e.getMessage());
-            }
-
-            // 用split方式處理，方便處理同檔多電文的情況
-            String[] splits = content.split("\u0003"); // swift 結束符號
-
-            for (int i = 0; i < splits.length; i++)
-            {
-                MTMessage mt = MTMessage.parse(splits[i]);
+                MTMessage mt = MTMessage.parse(swifts.get(i));
 
                 System.out.println("===========================================");
                 System.out.println(file.getName()  + " 中的電文 " + (i+1));

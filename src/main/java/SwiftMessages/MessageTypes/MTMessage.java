@@ -61,6 +61,7 @@ public class MTMessage {
      * @return 成功轉換時：對應的電文物件<br>否則：一個基本的 MTMessage 物件
      */
     public static MTMessage parse(String content) {
+
         MTMessage mtMessage = parseBlocks(content);
         mtMessage.parseColumns();
         return mtMessage;
@@ -97,7 +98,7 @@ public class MTMessage {
 
     private static MTMessage getMTMessage(String mtName) {
         try {
-            return (MTMessage) Class.forName("SwiftMessages." + mtName).newInstance();
+            return (MTMessage) Class.forName(MTMessage.class.getPackage().getName() + "." + mtName).newInstance();
         } catch (Exception e) {
             System.out.println("getMTMessage 收到未知的電文：" + mtName);
             return new MTMessage();
