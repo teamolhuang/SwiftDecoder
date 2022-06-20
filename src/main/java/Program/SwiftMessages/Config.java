@@ -1,4 +1,4 @@
-package Program;
+package Program.SwiftMessages;
 
 import java.io.FileInputStream;
 import java.io.InputStream;

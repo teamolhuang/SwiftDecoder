@@ -1,9 +1,10 @@
-package Annotations.SwiftMessages;
+package SwiftMessages.Annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AfterLiteral {
+public @interface ColumnId {
     String value();
+
 }

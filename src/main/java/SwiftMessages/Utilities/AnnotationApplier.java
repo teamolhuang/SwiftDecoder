@@ -1,7 +1,7 @@
-package Utility;
+package SwiftMessages.Utilities;
 
-import Annotations.SwiftMessages.*;
-import Enums.SwiftMessages.PresenceType;
+import SwiftMessages.Annotations.*;
+import SwiftMessages.Enums.PresenceType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

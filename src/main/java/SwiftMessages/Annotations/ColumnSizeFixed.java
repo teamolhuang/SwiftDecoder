@@ -1,9 +1,9 @@
-package Annotations.SwiftMessages;
+package SwiftMessages.Annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IfRegex {
-    String value();
+public @interface ColumnSizeFixed {
+    int value();
 }

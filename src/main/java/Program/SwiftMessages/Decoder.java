@@ -1,6 +1,6 @@
-package Program;
+package Program.SwiftMessages;
 
-import SwiftMessages.MTMessage;
+import SwiftMessages.MessageTypes.MTMessage;
 
 import java.io.File;
 import java.nio.file.Files;

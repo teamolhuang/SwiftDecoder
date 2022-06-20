@@ -10,7 +10,7 @@ public class GenericConstructor {
      * @param s 字串
      * @return 依據欄位型態建成的物件
      */
-    public static Object getInstance(Field field, String s)
+    public static Object getInstanceByField(Field field, String s)
     {
         boolean isInt = field.getType().equals(int.class);
         Object result = isInt ? 0 : null;

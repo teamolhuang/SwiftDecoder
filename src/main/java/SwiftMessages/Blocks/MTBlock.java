@@ -1,6 +1,6 @@
 package SwiftMessages.Blocks;
 
-import Utility.AnnotationApplier;
+import SwiftMessages.Utilities.AnnotationApplier;
 import Utility.GenericConstructor;
 
 import java.lang.reflect.Field;
@@ -60,7 +60,7 @@ public class MTBlock {
             try {
                 result = AnnotationApplier.shapeValueByAnnotations(content, field);
 
-                Object value = GenericConstructor.getInstance(field, result.get(0));
+                Object value = GenericConstructor.getInstanceByField(field, result.get(0));
                 field.set(this, value);
 
             } catch (Exception e)

@@ -1,7 +1,7 @@
-package SwiftMessages;
+package SwiftMessages.MessageTypes;
 
-import Annotations.SwiftMessages.*;
-import Enums.SwiftMessages.PresenceType;
+import SwiftMessages.Annotations.*;
+import SwiftMessages.Enums.PresenceType;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

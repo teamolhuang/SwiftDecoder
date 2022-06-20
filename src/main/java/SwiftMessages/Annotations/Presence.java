@@ -1,6 +1,6 @@
-package Annotations.SwiftMessages;
+package SwiftMessages.Annotations;
 
-import Enums.SwiftMessages.PresenceType;
+import SwiftMessages.Enums.PresenceType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

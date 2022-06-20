@@ -1,9 +1,10 @@
-package Annotations.SwiftMessages;
+package SwiftMessages.Annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UntilLiteral {
-    String value();
+public @interface BeginAt {
+    int pos() default 0;
+    int line() default 0;
 }

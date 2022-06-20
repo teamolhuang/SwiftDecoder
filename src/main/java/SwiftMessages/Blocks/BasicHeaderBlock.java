@@ -1,7 +1,7 @@
 package SwiftMessages.Blocks;
 
-import Annotations.SwiftMessages.BeginAt;
-import Annotations.SwiftMessages.ColumnSizeFixed;
+import SwiftMessages.Annotations.BeginAt;
+import SwiftMessages.Annotations.ColumnSizeFixed;
 import lombok.Getter;
 
 public class BasicHeaderBlock extends MTBlock {

@@ -1,9 +1,9 @@
-package SwiftMessages;
+package SwiftMessages.MessageTypes;
 
-import Annotations.SwiftMessages.ColumnId;
-import Annotations.SwiftMessages.ListItemType;
+import SwiftMessages.Annotations.ColumnId;
+import SwiftMessages.Annotations.ListItemType;
 import SwiftMessages.Blocks.*;
-import Utility.AnnotationApplier;
+import SwiftMessages.Utilities.AnnotationApplier;
 import Utility.GenericConstructor;
 import lombok.Getter;
 
@@ -168,7 +168,7 @@ public class MTMessage {
                         if (listItemType.equals(String.class)) {
                             fieldList.add(v);
                         } else {
-                            fieldList.add(GenericConstructor.getInstance(field, v));
+                            fieldList.add(GenericConstructor.getInstanceByField(field, v));
                         }
                     }
 
@@ -178,7 +178,7 @@ public class MTMessage {
                         if (field.getType().equals(String.class)) {
                             field.set(this, thisFieldValues.get(0));
                         } else {
-                            field.set(this, GenericConstructor.getInstance(field, thisFieldValues.get(0)));
+                            field.set(this, GenericConstructor.getInstanceByField(field, thisFieldValues.get(0)));
                         }
                     }
                 }
