@@ -1,8 +1,8 @@
 package SwiftMessages.Blocks;
 
-import Annotations.BeginAt;
-import Annotations.ColumnSizeFixed;
-import Annotations.ColumnSizeRange;
+import Annotations.SwiftMessages.BeginAt;
+import Annotations.SwiftMessages.ColumnSizeFixed;
+import Annotations.SwiftMessages.ColumnSizeRange;
 import lombok.Getter;
 
 public class ApplicationHeaderBlock extends MTBlock {

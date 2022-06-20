@@ -1,11 +1,9 @@
-package Annotations;
-
-import Enums.PresenceType;
+package Annotations.SwiftMessages;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Presence {
-    PresenceType value();
+public @interface IfRegex {
+    String value();
 }

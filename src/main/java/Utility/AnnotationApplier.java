@@ -1,7 +1,7 @@
 package Utility;
 
-import Annotations.*;
-import Enums.PresenceType;
+import Annotations.SwiftMessages.*;
+import Enums.SwiftMessages.PresenceType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

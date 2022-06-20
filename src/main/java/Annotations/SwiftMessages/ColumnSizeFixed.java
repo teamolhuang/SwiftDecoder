@@ -1,4 +1,4 @@
-package Annotations;
+package Annotations.SwiftMessages;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

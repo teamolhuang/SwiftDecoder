@@ -1,7 +1,7 @@
 package SwiftMessages;
 
-import Annotations.ColumnId;
-import Annotations.ListItemType;
+import Annotations.SwiftMessages.ColumnId;
+import Annotations.SwiftMessages.ListItemType;
 import SwiftMessages.Blocks.*;
 import Utility.AnnotationApplier;
 import Utility.GenericConstructor;

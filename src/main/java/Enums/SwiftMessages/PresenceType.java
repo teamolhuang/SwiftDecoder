@@ -1,4 +1,4 @@
-package Enums;
+package Enums.SwiftMessages;
 
 public enum PresenceType {
     Mandatory,

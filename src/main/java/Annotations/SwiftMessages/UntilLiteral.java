@@ -1,9 +1,9 @@
-package Annotations;
+package Annotations.SwiftMessages;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ColumnSizeRange {
-    int max();
+public @interface UntilLiteral {
+    String value();
 }
