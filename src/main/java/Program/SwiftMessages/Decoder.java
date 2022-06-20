@@ -3,9 +3,7 @@ package Program.SwiftMessages;
 import SwiftMessages.MessageTypes.MTMessage;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class Decoder {
 
@@ -13,8 +11,6 @@ public class Decoder {
     {
         for (File file : files)
         {
-            String content = "";
-
             List<String> swifts = IO.getSwiftContents(file.toPath());
 
             for (int i = 0; i < swifts.size(); i++)
